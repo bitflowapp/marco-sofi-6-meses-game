@@ -1,0 +1,138 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#120915">
+  <meta
+    name="description"
+    content="Juego romántico, divertido y pícaro para celebrar los 6 meses de Marco y Sofi."
+  >
+  <title>NIVEL 6 MESES DESBLOQUEADO | Marco + Sofi</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient ambient--one" aria-hidden="true"></div>
+  <div class="ambient ambient--two" aria-hidden="true"></div>
+  <div class="particles" id="particles" aria-hidden="true"></div>
+
+  <div class="site-shell">
+    <header class="topbar">
+      <div class="brand">
+        <p class="eyebrow">Edicion aniversario</p>
+        <h1>NIVEL 6 MESES DESBLOQUEADO</h1>
+        <p class="subtitle">Marco + Sofi</p>
+      </div>
+
+      <button
+        class="sound-toggle"
+        id="soundToggle"
+        type="button"
+        aria-pressed="false"
+        aria-label="Activar o desactivar sonido"
+      >
+        <span class="sound-toggle__indicator" aria-hidden="true"></span>
+        <span class="sound-toggle__text">Sonido apagado</span>
+      </button>
+    </header>
+
+    <main class="app">
+      <section class="panel welcome-screen" id="welcomeScreen" aria-labelledby="introTitle">
+        <p class="panel-badge">Modo pareja</p>
+        <div class="welcome-copy">
+          <p class="overline">Seis meses. Más cerca.</p>
+          <h2 id="introTitle">Preguntas que enamoran.</h2>
+          <p class="lead">Empieza suave. Después se acerca demasiado. El final no se apura.</p>
+        </div>
+
+        <div class="welcome-pills" aria-label="Claves del juego">
+          <span>13 momentos</span>
+          <span>Ternura + tensión</span>
+          <span>Final emocional</span>
+        </div>
+
+        <p class="welcome-rule">Regla única: no vale responder desde lejos.</p>
+
+        <div class="welcome-actions">
+          <button class="button button--primary" id="startButton" type="button">Empezar</button>
+          <p class="microcopy">Lo mejor pasa cuando bajan la guardia.</p>
+        </div>
+      </section>
+
+      <section class="game-screen" id="gameScreen" hidden aria-live="polite">
+        <div class="hud" aria-label="Estado de la partida">
+          <div class="hud__top">
+            <span class="round-stage" id="roundStageLabel">Ronda especial</span>
+            <span class="round-counter" id="roundCounter">Ronda 1/13</span>
+          </div>
+          <div class="hud__bottom">
+            <div class="progress-copy">
+              <span class="progress-text" id="progressText">0/13</span>
+              <div class="progress-track" aria-hidden="true">
+                <div class="progress-bar" id="progressBar"></div>
+              </div>
+            </div>
+            <div class="score-badge" id="scoreDisplay" aria-live="polite">0 corazones</div>
+          </div>
+        </div>
+
+        <article class="panel round-card" id="roundCard" data-round-type="quiz">
+          <div class="round-card__head">
+            <div class="round-meta">
+              <span class="round-tag" id="roundTypeTag">Pregunta</span>
+              <p class="round-kicker" id="roundCategory">Pregunta romantica</p>
+            </div>
+            <h2 id="roundTitle">Título de ronda</h2>
+            <p class="round-prompt" id="roundPrompt"></p>
+          </div>
+
+          <div class="round-body" id="roundBody"></div>
+
+          <div class="feedback" id="feedbackBox" hidden aria-live="polite" role="status" tabindex="-1">
+            <p class="feedback__title" id="feedbackTitle"></p>
+            <p class="feedback__text" id="feedbackText"></p>
+            <button class="button button--secondary" id="continueButton" type="button">Seguir</button>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel reveal-screen" id="revealScreen" hidden aria-live="assertive">
+        <p class="panel-badge panel-badge--result" id="revealLabel">Resultado emocional en proceso…</p>
+        <h2 id="revealTitle">Contando lo que se sintió</h2>
+        <p class="reveal-text" id="revealText">Respirá.</p>
+        <div class="reveal-line" aria-hidden="true">
+          <span></span>
+        </div>
+      </section>
+
+      <section class="panel result-screen" id="resultScreen" hidden aria-labelledby="resultTier">
+        <div class="result-glow" aria-hidden="true"></div>
+        <div class="panel-badge panel-badge--result">Resultado desbloqueado</div>
+        <p class="overline">Marco + Sofi</p>
+        <h2 id="resultTier">Nivel 6 meses superado</h2>
+        <p class="result-score" id="resultScore">0/18 corazones</p>
+        <p class="result-summary" id="resultSummary"></p>
+
+        <div class="result-meta" aria-label="Resumen del resultado">
+          <span class="result-chip" id="resultMetricScore">0/18</span>
+          <span class="result-chip" id="resultMetricMood">Quimica en analisis</span>
+          <span class="result-chip" id="resultMetricReward">Premio pendiente</span>
+        </div>
+
+        <div class="letter-block">
+          <p class="round-kicker">Marco para Sofi</p>
+          <p class="letter-text" id="finalMessage"></p>
+          <p class="signature">Marco</p>
+        </div>
+
+        <div class="result-actions">
+          <button class="button button--primary" id="restartButton" type="button">Jugar otra vez</button>
+          <p class="microcopy microcopy--result">Después de esto, mínimo una mirada larga.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
