@@ -1,1 +1,118 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#06101e"><title>Colectivo Escape</title><style>*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#030812;color:white;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;touch-action:none}main{position:relative;width:100%;height:100dvh;overflow:hidden;background:#06101e}canvas{display:block;width:100%;height:100%}.hud{position:absolute;z-index:3;top:max(12px,env(safe-area-inset-top));left:12px;right:12px;display:flex;gap:8px;align-items:center}.pill,.icon{border:1px solid #ffffff1c;background:#071326d9;backdrop-filter:blur(12px);box-shadow:0 8px 24px #0005}.pill{padding:9px 12px;border-radius:999px;font-weight:800;font-size:13px}.grow{flex:1}.icon{width:42px;height:42px;border-radius:14px;color:#fff;font-size:18px}.tip{position:absolute;z-index:3;left:14px;right:14px;bottom:max(14px,env(safe-area-inset-bottom));padding:11px;border-radius:17px;text-align:center;background:#071326c9;border:1px solid #ffffff1c;font-size:13px;font-weight:700;transition:.3s}.overlay{position:absolute;z-index:5;inset:0;display:grid;place-items:center;padding:22px;background:radial-gradient(circle at 50% 20%,#267df13d,transparent 34%),#030812db;backdrop-filter:blur(4px)}.hidden{display:none}.card{width:min(390px,100%);padding:26px;border-radius:26px;text-align:center;background:linear-gradient(180deg,#14253df7,#07111ffb);border:1px solid #ffffff20;box-shadow:0 28px 80px #0009}.logo{width:82px;height:82px;margin:0 auto 15px;display:grid;place-items:center;border-radius:24px;background:linear-gradient(145deg,#3999ff,#1c55d8);font-size:42px;box-shadow:0 18px 45px #1d5fde70}h1{margin:0;font-size:clamp(34px,10vw,48px);line-height:.95;letter-spacing:-.05em}h1 b{color:#54a3ff}.sub{color:#abbad0;line-height:1.5;margin:15px 0 20px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}.stat{padding:12px 7px;border-radius:16px;background:#ffffff0e;border:1px solid #ffffff12}.stat strong{display:block;font-size:21px}.stat span{color:#8da0ba;font-size:10px;text-transform:uppercase;font-weight:900;letter-spacing:.08em}button{appearance:none;border:0;font:inherit;font-weight:900;cursor:pointer}.primary{width:100%;min-height:56px;border-radius:18px;color:white;font-size:17px;background:linear-gradient(135deg,#3999ff,#1c55d8);box-shadow:0 16px 35px #1d5fde55}.secondary{width:100%;min-height:48px;margin-top:10px;border-radius:16px;color:#dce9fa;background:#ffffff0e;border:1px solid #ffffff18}.small{font-size:12px;color:#7f91aa;line-height:1.45;margin:14px 0 0}@media(min-width:520px){main{width:min(470px,100vw);height:min(900px,100dvh);margin:auto;border-radius:28px;box-shadow:0 25px 80px #000b;top:50%;transform:translateY(-50%)}}</style></head><body><main><canvas id="c"></canvas><div class="hud"><div id="score" class="pill grow">Puntos: 0</div><div id="life" class="pill">❤️❤️❤️</div><button id="sound" class="icon">🔊</button><button id="pause" class="icon">Ⅱ</button></div><div id="tip" class="tip">Deslizá a izquierda o derecha para cambiar de carril.</div><section id="menu" class="overlay"><div class="card"><div class="logo">🚌</div><h1>Colectivo <b>Escape</b></h1><p class="sub">Esquivá taxis, colectivos y pozos. Juntá monedas y sobreviví al tránsito.</p><div class="stats"><div class="stat"><strong id="best">0</strong><span>Récord</span></div><div class="stat"><strong id="total">0</strong><span>Monedas</span></div><div class="stat"><strong id="games">0</strong><span>Partidas</span></div></div><button id="start" class="primary">Jugar ahora</button><p class="small">En PC usá ← → o A/D. En el teléfono, deslizá el dedo.</p></div></section><section id="paused" class="overlay hidden"><div class="card"><div class="logo">⏸️</div><h1>Pausa</h1><p class="sub">El colectivo frenó. Milagro operativo.</p><button id="resume" class="primary">Seguir jugando</button><button id="resetP" class="secondary">Reiniciar</button></div></section><section id="over" class="overlay hidden"><div class="card"><div class="logo">💥</div><h1>Fin del viaje</h1><p id="msg" class="sub"></p><div class="stats"><div class="stat"><strong id="final">0</strong><span>Puntos</span></div><div class="stat"><strong id="coins">0</strong><span>Monedas</span></div><div class="stat"><strong id="record">0</strong><span>Récord</span></div></div><button id="again" class="primary">Jugar otra vez</button><button id="back" class="secondary">Volver al menú</button></div></section></main><script>(()=>{'use strict';const $=id=>document.getElementById(id),c=$('c'),x=c.getContext('2d'),ui={score:$('score'),life:$('life'),tip:$('tip'),menu:$('menu'),paused:$('paused'),over:$('over')};let W=0,H=0,D=1,last=0,audio=null,down=null;const key='colectivo_escape_live_v1';let save;try{save=Object.assign({best:0,total:0,games:0,sound:true},JSON.parse(localStorage.getItem(key)||'{}'))}catch{save={best:0,total:0,games:0,sound:true}}const s={mode:'menu',paused:false,t:0,score:0,coins:0,lives:3,speed:330,lane:1,target:1,inv:0,shield:false,magnet:0,spawn:.7,coin:1,power:8,offset:0,obs:[],items:[],parts:[],stars:[]};function persist(){localStorage.setItem(key,JSON.stringify(save))}function resize(){const r=c.getBoundingClientRect();W=r.width;H=r.height;D=Math.min(devicePixelRatio||1,2);c.width=W*D;c.height=H*D;x.setTransform(D,0,0,D,0,0);if(!s.stars.length)for(let i=0;i<45;i++)s.stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+.3,a:Math.random()*.5+.2})}function road(){const w=Math.min(W*.78,360),l=(W-w)/2;return{l,w,r:l+w,lw:w/3}}function lx(i){const r=road();return r.l+r.lw*(i+.5)}function py(){return H*.8}function menuStats(){$('best').textContent=save.best;$('total').textContent=save.total;$('games').textContent=save.games;$('sound').textContent=save.sound?'🔊':'🔇'}function ac(){if(!save.sound)return;if(!audio){const A=window.AudioContext||window.webkitAudioContext;if(A)audio=new A}if(audio&&audio.state==='suspended')audio.resume().catch(()=>{})}function beep(f,d=.08,type='sine',v=.035,slide=0){if(!save.sound)return;ac();if(!audio)return;const o=audio.createOscillator(),g=audio.createGain(),n=audio.currentTime;o.type=type;o.frequency.setValueAtTime(f,n);if(slide)o.frequency.linearRampToValueAtTime(f+slide,n+d);g.gain.setValueAtTime(.0001,n);g.gain.exponentialRampToValueAtTime(v,n+.01);g.gain.exponentialRampToValueAtTime(.0001,n+d);o.connect(g);g.connect(audio.destination);o.start(n);o.stop(n+d+.02)}function vib(p){navigator.vibrate?.(p)}function start(){Object.assign(s,{mode:'play',paused:false,t:0,score:0,coins:0,lives:3,speed:330,lane:1,target:1,inv:0,shield:false,magnet:0,spawn:.7,coin:1,power:8,offset:0,obs:[],items:[],parts:[]});save.games++;persist();menuStats();ui.menu.classList.add('hidden');ui.paused.classList.add('hidden');ui.over.classList.add('hidden');ui.tip.style.opacity=1;last=performance.now();beep(460,.07,'sine',.04,120)}function move(d){if(s.mode!=='play'||s.paused)return;const n=Math.max(0,Math.min(2,s.target+d));if(n!==s.target){s.target=n;ui.tip.style.opacity=0;beep(260,.045,'triangle',.025,70)}}function obstacle(){const lane=Math.floor(Math.random()*3),q=Math.random(),kind=q>.9?'bus':q>.72?'hole':'car',a=kind==='bus'?[58,108,.82,'#f0a533']:kind==='hole'?[58,30,1.13,'#20242b']:[46,76,.96,'#e44e51'];s.obs.push({lane,x:lx(lane),y:-130,w:a[0],h:a[1],m:a[2],color:a[3],kind,passed:false})}function item(kind='coin'){const lane=Math.floor(Math.random()*3);s.items.push({x:lx(lane),y:-35,r:kind==='coin'?12:15,kind,spin:0})}function burst(px,yy,color,n=10){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=40+Math.random()*160;s.parts.push({x:px,y:yy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.25+Math.random()*.35,max:.6,r:1.5+Math.random()*3,color})}if(s.parts.length>90)s.parts.splice(0,s.parts.length-90)}function hit(){if(s.inv>0)return;if(s.shield){s.shield=false;burst(lx(s.lane),py(),'#72e7ff',18);beep(760,.12,'sine',.05,-330);vib(20);return}s.lives--;s.inv=1.15;burst(lx(s.lane),py(),'#ff5c6a',18);beep(160,.17,'sawtooth',.05,-70);vib([40,30,60]);if(s.lives<=0)end()}function collect(p){if(p.kind==='coin'){s.coins++;s.score+=60;burst(p.x,p.y,'#ffd75a',8);beep(730,.07,'sine',.03,170)}else if(p.kind==='shield'){s.shield=true;s.score+=100;burst(p.x,p.y,'#72e7ff',14);beep(430,.14,'triangle',.045,350)}else{s.magnet=6;s.score+=100;burst(p.x,p.y,'#d388ff',14);beep(350,.14,'triangle',.045,250)}vib(12)}function end(){s.mode='over';const n=Math.floor(s.score),best=n>save.best;save.best=Math.max(save.best,n);save.total+=s.coins;persist();$('final').textContent=n;$('coins').textContent=s.coins;$('record').textContent=save.best;$('msg').textContent=best?'Nuevo récord. El chofer no lo vio venir.':'El pozo tuvo otros planes.';ui.over.classList.remove('hidden');menuStats();beep(200,.2,'sawtooth',.05,-100)}function toggle(v){if(s.mode!=='play')return;s.paused=typeof v==='boolean'?v:!s.paused;ui.paused.classList.toggle('hidden',!s.paused);$('pause').textContent=s.paused?'▶':'Ⅱ';if(!s.paused)last=performance.now()}function update(dt){if(s.mode!=='play'||s.paused)return;s.t+=dt;s.speed=Math.min(690,330+s.t*5);s.score+=dt*(10+s.speed*.028);s.offset=(s.offset+s.speed*dt)%90;s.inv=Math.max(0,s.inv-dt);s.magnet=Math.max(0,s.magnet-dt);s.lane+=(s.target-s.lane)*Math.min(1,dt*11);s.spawn-=dt;if(s.spawn<=0){obstacle();s.spawn=Math.max(.43,1.03-Math.min(.48,s.t*.0045))*(.82+Math.random()*.42)}s.coin-=dt;if(s.coin<=0){item();s.coin=.95+Math.random()*1.35}s.power-=dt;if(s.power<=0){item(Math.random()>.5?'shield':'magnet');s.power=10+Math.random()*8}const px=lx(s.lane),yy=py();for(let i=s.obs.length-1;i>=0;i--){const o=s.obs[i];o.y+=s.speed*o.m*dt;if(!o.passed&&o.y>yy+44){o.passed=true;s.score+=25}if(Math.abs(o.x-px)<(o.w+46)*.38&&Math.abs(o.y-yy)<(o.h+74)*.38){hit();s.obs.splice(i,1)}else if(o.y>H+150)s.obs.splice(i,1)}for(let i=s.items.length-1;i>=0;i--){const p=s.items[i];p.y+=s.speed*.92*dt;p.spin+=dt*6;if(s.magnet>0&&Math.abs(p.y-yy)<190)p.x+=(px-p.x)*Math.min(1,dt*8);if(Math.hypot(p.x-px,p.y-yy)<p.r+26){collect(p);s.items.splice(i,1)}else if(p.y>H+60)s.items.splice(i,1)}for(let i=s.parts.length-1;i>=0;i--){const p=s.parts[i];p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.97;p.vy*=.97;if(p.life<=0)s.parts.splice(i,1)}ui.score.textContent='Puntos: '+Math.floor(s.score);ui.life.textContent='❤️'.repeat(Math.max(0,s.lives))+(s.shield?' 🛡️':'')+(s.magnet>0?' 🧲':'')}function rr(px,yy,w,h,r,fill){x.beginPath();x.roundRect(px,yy,w,h,r);x.fillStyle=fill;x.fill()}function bg(){const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0d1930');g.addColorStop(1,'#06101e');x.fillStyle=g;x.fillRect(0,0,W,H);for(const a of s.stars){x.globalAlpha=a.a;x.fillStyle='#9fc4ff';x.beginPath();x.arc(a.x,a.y,a.r,0,7);x.fill()}x.globalAlpha=1;const r=road();x.fillStyle='#0a1320';x.fillRect(0,0,r.l,H);x.fillRect(r.r,0,W-r.r,H);x.fillStyle='#253344';x.fillRect(r.l-24,0,24,H);x.fillRect(r.r,0,24,H);x.fillStyle='#17202c';x.fillRect(r.l,0,r.w,H);x.strokeStyle='#dce7f255';x.lineWidth=3;x.setLineDash([44,46]);x.lineDashOffset=s.offset;for(let i=1;i<3;i++){const xx=r.l+r.lw*i;x.beginPath();x.moveTo(xx,-100);x.lineTo(xx,H+100);x.stroke()}x.setLineDash([])}function player(){if(s.inv>0&&Math.floor(s.inv*12)%2===0)return;x.save();x.translate(lx(s.lane),py());if(s.shield){x.strokeStyle='#72e7ff';x.lineWidth=3;x.shadowColor='#72e7ff';x.shadowBlur=15;x.beginPath();x.arc(0,0,38,0,7);x.stroke();x.shadowBlur=0}x.shadowColor='#2f8cff';x.shadowBlur=15;rr(-23,-37,46,74,13,'#2f8cff');x.shadowBlur=0;rr(-16,-29,32,19,7,'#c2eaff');rr(-16,-3,32,25,7,'#1b67dd');x.fillStyle='#eff8ff';x.beginPath();x.arc(-14,30,5,0,7);x.arc(14,30,5,0,7);x.fill();x.restore()}function drawO(o){x.save();x.translate(o.x,o.y);if(o.kind==='hole'){x.fillStyle='#080b10';x.beginPath();x.ellipse(0,0,o.w/2,o.h/2,0,0,7);x.fill()}else{rr(-o.w/2,-o.h/2,o.w,o.h,11,o.color);rr(-o.w*.34,-o.h*.34,o.w*.68,o.h*.22,5,'#bfe0ed');rr(-o.w*.34,o.h*.06,o.w*.68,o.h*.17,5,'#17324f');x.fillStyle='#fff0be';x.beginPath();x.arc(-o.w*.27,o.h*.39,4,0,7);x.arc(o.w*.27,o.h*.39,4,0,7);x.fill()}x.restore()}function drawI(p){x.save();x.translate(p.x,p.y);x.rotate(p.spin);const col=p.kind==='coin'?'#ffd75a':p.kind==='shield'?'#72e7ff':'#d388ff';x.shadowColor=col;x.shadowBlur=14;x.fillStyle=col;x.beginPath();x.arc(0,0,p.r,0,7);x.fill();x.shadowBlur=0;x.fillStyle='#07111f';x.font='900 15px system-ui';x.textAlign='center';x.textBaseline='middle';x.fillText(p.kind==='coin'?'$':p.kind==='shield'?'S':'M',0,1);x.restore()}function render(){bg();for(const p of s.items)drawI(p);for(const o of s.obs)drawO(o);player();for(const p of s.parts){x.globalAlpha=Math.max(0,p.life/p.max);x.fillStyle=p.color;x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fill()}x.globalAlpha=1}function frame(n){const dt=Math.min(.033,Math.max(0,(n-last)/1000||0));last=n;update(dt);render();requestAnimationFrame(frame)}c.addEventListener('pointerdown',e=>{down=e.clientX;ac()},{passive:true});c.addEventListener('pointermove',e=>{if(down==null)return;const d=e.clientX-down;if(Math.abs(d)>34){move(d>0?1:-1);down=e.clientX}},{passive:true});['pointerup','pointercancel'].forEach(t=>c.addEventListener(t,()=>down=null,{passive:true}));addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(k==='arrowleft'||k==='a'){e.preventDefault();move(-1)}else if(k==='arrowright'||k==='d'){e.preventDefault();move(1)}else if(k==='escape'||k==='p'){e.preventDefault();toggle()}else if(k==='enter'&&s.mode==='over')start()});$('start').onclick=start;$('again').onclick=start;$('resetP').onclick=start;$('resume').onclick=()=>toggle(false);$('pause').onclick=()=>toggle();$('back').onclick=()=>{s.mode='menu';ui.over.classList.add('hidden');ui.menu.classList.remove('hidden')};$('sound').onclick=()=>{save.sound=!save.sound;persist();menuStats();if(save.sound){ac();beep(520,.08,'sine',.04,120)}};document.addEventListener('visibilitychange',()=>{if(document.hidden&&s.mode==='play'&&!s.paused)toggle(true)});addEventListener('resize',resize);resize();menuStats();requestAnimationFrame(n=>{last=n;requestAnimationFrame(frame)})})();</script></body></html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#06101f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>Colectivo Escape: Noche Turbo</title>
+  <link rel="stylesheet" href="./colectivo-v2.css?v=2.0.0" />
+</head>
+<body>
+  <main id="shell">
+    <canvas id="game" aria-label="Juego Colectivo Escape"></canvas>
+
+    <section id="hud" class="hidden" aria-live="polite">
+      <div class="hud-top">
+        <div id="score" class="pill">🏁 <strong>0</strong></div>
+        <div id="coins" class="pill">🪙 0</div>
+        <div id="lives" class="pill">❤️❤️❤️</div>
+        <button id="soundButton" class="icon-btn" aria-label="Activar o silenciar sonido">🔊</button>
+        <button id="pauseButton" class="icon-btn" aria-label="Pausar partida">Ⅱ</button>
+      </div>
+      <div class="mission-card">
+        <div class="mission-row">
+          <span id="missionText">Misión</span>
+          <span id="missionProgress">0/0</span>
+        </div>
+        <div class="mission-track"><div id="missionFill"></div></div>
+      </div>
+      <div id="powerStrip">
+        <span id="powerShield" class="power-chip hidden">🛡️ Escudo</span>
+        <span id="powerMagnet" class="power-chip hidden">🧲 Imán</span>
+        <span id="powerTurbo" class="power-chip hidden">⚡ Turbo</span>
+        <span id="powerDouble" class="power-chip hidden">✖️2 Puntos</span>
+        <span id="powerSlow" class="power-chip hidden">⏱️ Tiempo lento</span>
+        <span id="powerGhost" class="power-chip hidden">👻 Fantasma</span>
+      </div>
+    </section>
+
+    <div id="comboBadge">COMBO ×1.0</div>
+    <div id="controlsHint">Deslizá hacia los costados para cambiar de carril.</div>
+    <div id="toastStack" aria-live="polite"></div>
+
+    <section id="startOverlay" class="overlay">
+      <div class="card">
+        <div class="logo">🏎️</div>
+        <h1>Colectivo <span>Escape</span></h1>
+        <p class="subtitle">
+          Noche Turbo: esquivá el caos, encadená combos y sobreviví a eventos sorpresa.
+        </p>
+        <div class="stats">
+          <div class="stat"><strong id="bestScoreStart">0</strong><span>Récord</span></div>
+          <div class="stat"><strong id="totalCoinsStart">0</strong><span>Monedas</span></div>
+          <div class="stat"><strong id="gamesStart">0</strong><span>Partidas</span></div>
+        </div>
+        <button id="startButton" class="primary">Jugar ahora</button>
+        <div class="menu-grid">
+          <button id="shopButton" class="secondary">🛒 Mejoras</button>
+          <button id="achievementsButton" class="secondary">🏆 Logros</button>
+        </div>
+        <p class="small">iPhone: deslizá. PC: A/D o flechas. P para pausar.</p>
+      </div>
+    </section>
+
+    <section id="pauseOverlay" class="overlay hidden">
+      <div class="card">
+        <div class="logo">⏸️</div>
+        <h1>Pausa</h1>
+        <p class="subtitle">El tránsito esperó. Milagro estadístico.</p>
+        <button id="resumeButton" class="primary">Seguir</button>
+        <button id="restartPauseButton" class="secondary">Reiniciar partida</button>
+        <button id="menuPauseButton" class="secondary">Volver al menú</button>
+      </div>
+    </section>
+
+    <section id="gameOverOverlay" class="overlay hidden">
+      <div class="card">
+        <div class="logo">💥</div>
+        <h1>Fin del viaje</h1>
+        <p id="gameOverText" class="subtitle"></p>
+        <div class="stats">
+          <div class="stat"><strong id="finalScore">0</strong><span>Puntos</span></div>
+          <div class="stat"><strong id="finalCoins">0</strong><span>Monedas</span></div>
+          <div class="stat"><strong id="finalCombo">0</strong><span>Mejor combo</span></div>
+        </div>
+        <button id="restartButton" class="primary">Jugar otra vez</button>
+        <button id="menuButton" class="secondary">Volver al menú</button>
+      </div>
+    </section>
+
+    <section id="shopOverlay" class="overlay hidden">
+      <div class="card">
+        <h2>🛒 Taller nocturno</h2>
+        <p class="subtitle">Gastá monedas acumuladas en mejoras permanentes.</p>
+        <div class="pill" style="display:inline-block">🪙 <span id="shopCoins">0</span></div>
+        <div id="shopList" class="shop-list"></div>
+        <button id="closeShopButton" class="primary">Volver</button>
+      </div>
+    </section>
+
+    <section id="achievementsOverlay" class="overlay hidden">
+      <div class="card">
+        <h2>🏆 Logros</h2>
+        <p class="subtitle">Pequeñas pruebas de que el tránsito todavía no pudo contigo.</p>
+        <div id="achievementList" class="achievement-list"></div>
+        <button id="closeAchievementsButton" class="primary">Volver</button>
+      </div>
+    </section>
+  </main>
+
+<script src="./colectivo-v2-1.js?v=2.0.0"></script>
+<script src="./colectivo-v2-2.js?v=2.0.0"></script>
+<script src="./colectivo-v2-3.js?v=2.0.0"></script>
+<script src="./colectivo-v2-4.js?v=2.0.0"></script>
+</body>
+</html>
